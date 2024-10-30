@@ -1,0 +1,91 @@
+#include <iostream>
+using namespace std;
+
+struct Node {
+    int coefficient;  // He so
+    int exponent;     // Bac
+    Node* next;
+
+    Node(int coef, int exp) : coefficient(coef), exponent(exp), next(NULL) {}
+};
+
+class Polynomial {
+private:
+    Node* head;
+
+public:
+    Polynomial() : head(NULL) {}
+
+    // Thêm mot phan tu vao da thuc
+    void addTerm(int coefficient, int exponent) {
+        if (coefficient == 0) return;  // Không thêm phan tu co he so la 0
+
+        Node* newNode = new Node(coefficient, exponent);
+        if (!head || head->exponent < exponent) {
+            newNode->next = head;
+            head = newNode;
+        } else {
+            Node* temp = head;
+            while (temp->next && temp->next->exponent >= exponent) {
+                temp = temp->next;
+            }
+            if (temp->exponent == exponent) {
+                temp->coefficient += coefficient;
+                delete newNode;  // Giai phóng neu phan tu có bac trùng
+            } else {
+                newNode->next = temp->next;
+                temp->next = newNode;
+            }
+        }
+    }
+
+    // Hàm in da thuc
+    void printPolynomial() const {
+        Node* temp = head;
+        bool firstTerm = true;
+
+        while (temp != NULL) {
+            if (!firstTerm && temp->coefficient > 0) {
+                cout << " + ";
+            } else if (temp->coefficient < 0) {
+                cout << " - ";
+            }
+
+            cout << (temp->coefficient < 0 ? -temp->coefficient : temp->coefficient)
+                 << "x^" << temp->exponent;
+
+            temp = temp->next;
+            firstTerm = false;
+        }
+        cout << endl;
+    }
+
+    // Giai phong bo nho
+    ~Polynomial() {
+        Node* temp;
+        while (head) {
+            temp = head;
+            head = head->next;
+            delete temp;
+        }
+    }
+};
+
+int main() {
+    Polynomial poly;
+    int n, coef, exp;
+
+    cout << "Nhap so luong phan tu cua da thuc: ";
+    cin >> n;
+
+    for (int i = 0; i < n; i++) {
+        cout << "Nhap he so va bac cua phan tu " << i + 1 << ": ";
+        cin >> coef >> exp;
+        poly.addTerm(coef, exp);
+    }
+
+    cout << "Ða thuc vua nhap: ";
+    poly.printPolynomial();
+
+    return 0;
+}
