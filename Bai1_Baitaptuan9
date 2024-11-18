@@ -1,0 +1,104 @@
+#include <iostream>
+using namespace std;
+
+// Khai bao cau truc cua node trong danh sach lien ket
+struct Node {
+    char fileName[100];    // Tên file
+    int fileSize;          // Kich thuoc file
+    char timeCreated[20];  // Thoi gian tao file
+    Node* next;            // Con tro tro den node tiepp theo
+};
+
+// Khai báo danh sách liên ket
+struct LinkedList {
+    Node* head;            // Con tro tro den dau danh sách
+
+    // Hàm khoi tao
+    LinkedList() {
+        head = NULL;       // Su dung NULL thay cho nullptr
+    }
+};
+
+// Ham them file vao danh sach lien ket theo thu tu thoi gian
+void addFile(LinkedList &list, const char fileName[], int fileSize, const char timeCreated[]) {
+    // Tao mot node moi
+    Node* newNode = new Node;
+    int i;
+    for (i = 0; fileName[i] != '\0'; i++) newNode->fileName[i] = fileName[i];
+    newNode->fileName[i] = '\0'; // Dam bao chuoi ket thuc
+    newNode->fileSize = fileSize;
+    for (i = 0; timeCreated[i] != '\0'; i++) newNode->timeCreated[i] = timeCreated[i];
+    newNode->timeCreated[i] = '\0'; // Dam bao chuoi ket thuc
+    newNode->next = NULL;
+
+    // Chen node vao danh sach theo thu tu thoi gian
+    if (list.head == NULL || timeCreated[0] < list.head->timeCreated[0]) {
+        newNode->next = list.head;
+        list.head = newNode;
+    } else {
+        Node* current = list.head;
+        while (current->next != NULL && timeCreated[0] > current->next->timeCreated[0]) {
+            current = current->next;
+        }
+        newNode->next = current->next;
+        current->next = newNode;
+    }
+}
+
+// Ham tinh tong kich thuoc cac file trong danh sach
+int calculateTotalSize(LinkedList &list) {
+    int totalSize = 0;
+    Node* current = list.head;
+    while (current != NULL) {
+        totalSize += current->fileSize;
+        current = current->next;
+    }
+    return totalSize;
+}
+
+// Ham sao luu file vao USB voi dung luong gioi han
+void backupToUSB(LinkedList &list, int usbSize) {
+    int currentSize = 0;
+    Node* current = list.head;
+
+    cout << "Cac file duoc sao luu: " << endl;
+    while (current != NULL && currentSize + current->fileSize <= usbSize) {
+        cout << "File: " << current->fileName << ", Kich thuoc: " << current->fileSize << endl;
+        currentSize += current->fileSize;
+        current = current->next;
+    }
+    cout << "Dung luong da su dung: " << currentSize << "/" << usbSize << endl;
+}
+
+// Hàm hi?n th? danh sách file
+void displayFiles(LinkedList &list) {
+    Node* current = list.head;
+    cout << "Danh sach file: " << endl;
+    while (current != NULL) {
+        cout << "File: " << current->fileName << ", Kich thuoc: " << current->fileSize
+             << ", Thoi gian tao: " << current->timeCreated << endl;
+        current = current->next;
+    }
+}
+
+// Hàm chính
+int main() {
+    LinkedList list;
+
+    // Thêm file vào danh sách
+    addFile(list, "file1.txt", 1200, "2024-11-10");
+    addFile(list, "file2.txt", 800, "2024-11-12");
+    addFile(list, "file3.txt", 500, "2024-11-11");
+
+    // Hien thi danh sách file
+    displayFiles(list);
+
+    // Tinh tong kich thuoc cac file
+    int totalSize = calculateTotalSize(list);
+    cout << "Tong kich thuoc cac file: " << totalSize << " bytes" << endl;
+
+    // Sao luu file vao USB voi dung luong 2GB (2048MB)
+    backupToUSB(list, 2048);
+
+    return 0;
+}
