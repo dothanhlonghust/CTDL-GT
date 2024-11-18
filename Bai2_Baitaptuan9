@@ -1,0 +1,158 @@
+#include <iostream>
+using namespace std;
+
+// Cau truc mot Node
+struct Node {
+    char word[50]; // Tu duoc luu tru trong moi node
+    Node* next;    // Con tro den node tiep theo
+};
+
+// Them mot tu vao danh sach lien ket
+void addWord(Node*& head, const char* newWord) {
+    Node* newNode = new Node;
+    int i = 0;
+    while (newWord[i] != '\0') {
+        newNode->word[i] = newWord[i];
+        i++;
+    }
+    newNode->word[i] = '\0';
+    newNode->next = NULL; // Thay nullptr bang NULL
+
+    if (!head) {
+        head = newNode;
+    } else {
+        Node* temp = head;
+        while (temp->next) {
+            temp = temp->next;
+        }
+        temp->next = newNode;
+    }
+}
+
+// Dem so lan xuat hien cua tu trong danh sach
+int countWord(Node* head, const char* word) {
+    int count = 0;
+    while (head) {
+        int i = 0;
+        bool match = true;
+        while (word[i] != '\0' && head->word[i] != '\0') {
+            if (word[i] != head->word[i]) {
+                match = false;
+                break;
+            }
+            i++;
+        }
+        if (match && word[i] == '\0' && head->word[i] == '\0') {
+            count++;
+        }
+        head = head->next;
+    }
+    return count;
+}
+
+// Tim tu xuat hien nhieu nhat
+void findMostFrequent(Node* head) {
+    Node* temp = head;
+    const char* mostFrequent = NULL; // Thay nullptr bang NULL
+    int maxCount = 0;
+
+    while (temp) {
+        int count = countWord(head, temp->word);
+        if (count > maxCount) {
+            maxCount = count;
+            mostFrequent = temp->word;
+        }
+        temp = temp->next;
+    }
+
+    if (mostFrequent) {
+        cout << "Tu xuat hien nhieu nhat: " << mostFrequent << " (xuat hien " << maxCount << " lan)\n";
+    }
+}
+
+// Loai bo tu lay
+void removeRepeats(Node*& head) {
+    Node* current = head;
+    while (current && current->next) {
+        int i = 0;
+        bool isRepeat = true;
+        while (current->word[i] != '\0' && current->next->word[i] != '\0') {
+            if (current->word[i] != current->next->word[i]) {
+                isRepeat = false;
+                break;
+            }
+            i++;
+        }
+        if (isRepeat && current->word[i] == '\0' && current->next->word[i] == '\0') {
+            Node* temp = current->next;
+            current->next = temp->next;
+            delete temp;
+        } else {
+            current = current->next;
+        }
+    }
+}
+
+// Dem so tu trong danh sach
+int countTotalWords(Node* head) {
+    int count = 0;
+    while (head) {
+        count++;
+        head = head->next;
+    }
+    return count;
+}
+
+// In danh sach
+void printList(Node* head) {
+    while (head) {
+        cout << head->word << " ";
+        head = head->next;
+    }
+    cout << endl;
+}
+
+// Ham chinh
+int main() {
+    Node* head = NULL; // Thay nullptr bang NULL
+
+    // Nh?p câu ti?ng Vi?t
+    cout << "Nhap mot cau: ";
+    char sentence[1000];
+    cin.getline(sentence, 1000);
+
+    // Tach tu va them vao danh sach
+    char word[50];
+    int i = 0, j = 0;
+    while (sentence[i] != '\0') {
+        if (sentence[i] == ' ' || sentence[i] == '\0') {
+            if (j > 0) {
+                word[j] = '\0';
+                addWord(head, word);
+                j = 0;
+            }
+        } else {
+            word[j++] = sentence[i];
+        }
+        i++;
+    }
+    if (j > 0) {
+        word[j] = '\0';
+        addWord(head, word);
+    }
+
+    // Thuc hien cac yeu cau
+    cout << "Danh sach tu trong cau: ";
+    printList(head);
+
+    findMostFrequent(head);
+
+    removeRepeats(head);
+    cout << "Danh sach sau khi loai bo tu lay: ";
+    printList(head);
+
+    int totalWords = countTotalWords(head);
+    cout << "Tong so tu trong danh sach: " << totalWords << endl;
+
+    return 0;
+}
