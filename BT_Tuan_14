@@ -1,0 +1,88 @@
+#include <iostream>
+#include <string>
+#include <stack>
+
+using namespace std;
+
+// Cau truc cho mot node trên cây
+struct Node {
+    string value;
+    Node* left;
+    Node* right;
+    Node(string val) : value(val), left(NULL), right(NULL) {} // Sua nullptr thành NULL
+};
+
+// Hàm kiem tra node rong
+bool isEmpty(Node* root) {
+    return root == NULL; // Sua nullptr thanh NULL
+}
+
+// Ham tao cay tu bieu thuc Hau to
+Node* buildTree(const string postfix[]) {
+    stack<Node*> st;
+    for (int i = 0; postfix[i] != ""; i++) {
+        string token = postfix[i];
+        if (isalnum(token[0])) { // Toan hang
+            st.push(new Node(token));
+        } else { // Toan tu
+            Node* node = new Node(token);
+            node->right = st.top(); st.pop();
+            node->left = st.top(); st.pop();
+            st.push(node);
+        }
+    }
+    return st.top();
+}
+
+// Duyet cay theo Trung to
+void inorder(Node* root) {
+    if (root) {
+        if (!isalnum(root->value[0])) cout << "(";
+        inorder(root->left);
+        cout << root->value << " ";
+        inorder(root->right);
+        if (!isalnum(root->value[0])) cout << ")";
+    }
+}
+
+// Duyet cay theo Tien to
+void preorder(Node* root) {
+    if (root) {
+        cout << root->value << " ";
+        preorder(root->left);
+        preorder(root->right);
+    }
+}
+
+// Duyet cay theo Hau to
+void postorder(Node* root) {
+    if (root) {
+        postorder(root->left);
+        postorder(root->right);
+        cout << root->value << " ";
+    }
+}
+
+// Ham main
+int main() {
+    // Bieu thuc hau to tuong ung
+    string postfix[] = {"a", "5", "*", "b", "c", "6", "^", "*", "d", "/", "-", "k", "g", "-", "e", "h", "z", "^", "^", "*", "+", ""};
+
+    // Xay dung cay bieu thuc
+    Node* root = buildTree(postfix);
+
+    // In ra cac cach bieu dien
+    cout << "Trung to: ";
+    inorder(root);
+    cout << endl;
+
+    cout << "Tien to: ";
+    preorder(root);
+    cout << endl;
+
+    cout << "Hau to: ";
+    postorder(root);
+    cout << endl;
+
+    return 0;
+}
