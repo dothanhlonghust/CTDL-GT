@@ -1,0 +1,123 @@
+#include <iostream>
+#include <vector>
+#include <string>
+using namespace std;
+
+// Cau truc bieu dien mot muc trong cay muc luc
+struct Node {
+    string title; // Tieu de muc
+    int pages;    // So trang cua muc
+    vector<Node*> children; // Cac muc con
+
+    Node(string t, int p) : title(t), pages(p) {}
+};
+
+// Ham tinh so chuong cua cuon sach (cap 1 trong cay)
+int countChapters(Node* root) {
+    if (!root) return 0;
+    return root->children.size();
+}
+
+// Ham tim chuong dai nhat cua cuon sach (dua tren so trang)
+Node* findLongestChapter(Node* root) {
+    if (!root) return NULL;
+    Node* longest = NULL;
+    int maxPages = 0;
+    for (size_t i = 0; i < root->children.size(); ++i) {
+        Node* chapter = root->children[i];
+        if (chapter->pages > maxPages) {
+            maxPages = chapter->pages;
+            longest = chapter;
+        }
+    }
+    return longest;
+}
+
+// Ham tim va xoa mot muc (theo tieu de) khoi cay
+bool deleteSection(Node* root, const string& targetTitle) {
+    if (!root) return false;
+
+    for (vector<Node*>::iterator it = root->children.begin(); it != root->children.end(); ++it) {
+        if ((*it)->title == targetTitle) {
+            // Xoa muc nay va giai phong bo nho
+            delete *it;
+            root->children.erase(it);
+            return true;
+        }
+        // Tiep tuc tim trong cac muc con
+        if (deleteSection(*it, targetTitle)) {
+            return true;
+        }
+    }
+    return false;
+}
+
+// Ham cap nhat lai so trang cua cac muc cha khi xoa mot muc
+void updatePageCount(Node* root) {
+    if (!root) return;
+    root->pages = 0;
+    for (size_t i = 0; i < root->children.size(); ++i) {
+        Node* child = root->children[i];
+        updatePageCount(child);
+        root->pages += child->pages;
+    }
+}
+
+// Ham tien ich de them mot muc moi
+void addSection(Node* parent, const string& title, int pages) {
+    if (!parent) return;
+    Node* newSection = new Node(title, pages);
+    parent->children.push_back(newSection);
+}
+
+// Ham duyet cay va in cac muc luc
+void printTree(Node* root, int level = 0) {
+    if (!root) return;
+    for (int i = 0; i < level; ++i) cout << "  ";
+    cout << "- " << root->title << " (" << root->pages << " pages)\n";
+    for (size_t i = 0; i < root->children.size(); ++i) {
+        printTree(root->children[i], level + 1);
+    }
+}
+
+int main() {
+    // Tao mot cuon sach mau
+    Node* book = new Node("Book Title", 0);
+    addSection(book, "Chapter 1", 50);
+    addSection(book, "Chapter 2", 30);
+    addSection(book, "Chapter 3", 70);
+    addSection(book->children[0], "Section 1.1", 20);
+    addSection(book->children[0], "Section 1.2", 30);
+    addSection(book->children[2], "Section 3.1", 50);
+
+    // In cay muc luc
+    cout << "Book structure:\n";
+    printTree(book);
+
+    // So chuong cua cuon sach
+    cout << "\nNumber of chapters: " << countChapters(book) << "\n";
+
+    // Tim chuong dai nhat
+    Node* longest = findLongestChapter(book);
+    if (longest) {
+        cout << "Longest chapter: " << longest->title << " with " << longest->pages << " pages\n";
+    }
+
+    // Xoa mot muc
+    string target = "Section 1.2";
+    if (deleteSection(book, target)) {
+        cout << "\nDeleted section: " << target << "\n";
+        updatePageCount(book);
+    } else {
+        cout << "\nSection not found: " << target << "\n";
+    }
+
+    // In lai cay muc luc sau khi xoa
+    cout << "\nUpdated book structure:\n";
+    printTree(book);
+
+    // Giai phong bo nho
+    delete book;
+
+    return 0;
+}
